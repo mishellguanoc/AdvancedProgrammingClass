@@ -1,0 +1,12 @@
+Make a Class
+------------
+
+Q1. What’s const-correctness and why is it important?
+A1. Const-correctness means marking methods as "const" when they do not modify the internal state of an object. 
+    It is important because it prevents unintended modifications and allows objects to be used in a read-only 
+    context, improving code safety and readability.
+
+Q2. Is your class const-correct? How do you know?
+A2. es, my class is const-correct because all getter methods are marked as "const", meaning they do not modify 
+    the object. Additionally, the private function "determineCategory()" is also const since it only reads 
+    the object's attributes without changing them.

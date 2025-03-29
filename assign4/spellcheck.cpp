@@ -11,10 +11,8 @@ template <typename Iterator, typename UnaryPred>
 std::vector<Iterator> find_all(Iterator begin, Iterator end, UnaryPred pred);
 
 Corpus tokenize(const std::string& source) {
-    // All token limits found using find_all
-    auto space_iters = find_all(source.begin(), source.end(), ::isspace);
-
-    // tokens are generated between consecutive iterators
+   auto space_iters = find_all(source.begin(), source.end(), ::isspace);
+  
     Corpus tokens;
     std::transform(
         space_iters.begin(), std::prev(space_iters.end()), 
@@ -25,7 +23,6 @@ Corpus tokenize(const std::string& source) {
         }
     );
 
-    // Eliminate all the empty tokens
     std::erase_if(tokens, [](const Token& t) {
         return t.content.empty();
     });
@@ -34,31 +31,27 @@ Corpus tokenize(const std::string& source) {
 }
 
 std::set<Mispelling> spellcheck(const Corpus& source, const Dictionary& dictionary) {
-    namespace rv = std::ranges::views;
+    namespace rangeViews = std::ranges::views;
 
-    // Pipeline of ranges
     auto results = source
-        // Filtering words not present in the dictionary
-        | rv::filter([&dictionary](const Token& t) {
+        | rangeViews::filter([&dictionary](const Token& t) {
             return !dictionary.contains(t.content);
         })
     
         
-        | rv::transform([&dictionary](const Token& token) {
+        | rangeViews::transform([&dictionary](const Token& token) {
             auto suggestions = dictionary
-                | rv::filter([&token](const std::string& word) {
+                | rangeViews::filter([&token](const std::string& word) {
                     return levenshtein(token.content, word) == 1;
                 })
-                | rv::common; // Convert to common range to build the set
-
+                | rangeViews::common; 
             return Mispelling{
                 token,
                 std::set<std::string>(suggestions.begin(), suggestions.end())
             };
         })
-        // 3. Filtrate words without suggestions
-        rv::filter([](const Mispelling& m) {
-            return !m.suggestions.empty();
+        rangeViews::filter([](const Mispelling& x) {
+            return !x.suggestions.empty();
         });
 
     return std::set<Mispelling>(results.begin(), results.end());
